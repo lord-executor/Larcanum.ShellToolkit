@@ -20,14 +20,19 @@ public partial class Command : ICommand
     [GeneratedRegex(@"\\([""])")]
     private static partial Regex EscapeSequenceExpression { get; }
 
-    public static Command Create(string cmd, IEnumerable<string> cmdArgs)
+    public static Command Create(string cmd, IEnumerable<IArg> cmdArgs)
     {
         return new Command(cmd, cmdArgs);
     }
 
+    public static Command Create(string cmd, IEnumerable<string> cmdArgs)
+    {
+        return new Command(cmd, cmdArgs.Select(s => (StringArg)s));
+    }
+
     public static Command Create(string cmd, string cmdArgs)
     {
-        return new Command(cmd, cmdArgs.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+        return new Command(cmd, cmdArgs.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(s => (StringArg)s));
     }
 
     public static Command Create(string cmd)
@@ -37,14 +42,14 @@ public partial class Command : ICommand
             .Select(val => EscapeSequenceExpression.Replace(val, "$1"))
             .ToArray();
         var commandName = args[0];
-        return new Command(commandName, args[1..]);
+        return new Command(commandName, args[1..].Select(s => (StringArg)s));
     }
 
     private readonly string _cmd;
-    private readonly IEnumerable<string> _cmdArgs;
+    private readonly IEnumerable<IArg> _cmdArgs;
     private readonly string _workingDir = Environment.CurrentDirectory;
 
-    private Command(string cmd, IEnumerable<string> cmdArgs)
+    private Command(string cmd, IEnumerable<IArg> cmdArgs)
     {
         _cmd = cmd;
         _cmdArgs = cmdArgs;
@@ -60,7 +65,7 @@ public partial class Command : ICommand
 
         foreach (var arg in _cmdArgs)
         {
-            info.ArgumentList.Add(arg);
+            info.ArgumentList.Add(arg.Argument);
         }
 
         return info;
@@ -68,6 +73,6 @@ public partial class Command : ICommand
 
     public override string ToString()
     {
-        return $"{_cmd} {string.Join(" ", _cmdArgs)}";
+        return $"{_cmd} {string.Join(" ", _cmdArgs.Select(a => a.DisplayText))}";
     }
 }
