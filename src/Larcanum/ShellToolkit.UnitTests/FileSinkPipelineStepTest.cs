@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 
-using FluentAssertions;
+using AwesomeAssertions;
 
 using Larcanum.ShellToolkit;
 

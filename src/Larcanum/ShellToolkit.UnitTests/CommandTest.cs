@@ -1,8 +1,6 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 
 using Larcanum.ShellToolkit;
-
-using Microsoft.Extensions.Logging.Abstractions;
 
 using Xunit;
 
