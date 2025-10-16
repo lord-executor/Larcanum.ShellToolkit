@@ -19,6 +19,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ShellToolkit\ShellToolkit.csproj" />
+      <ProjectReference Include="..\ShellToolkit.Terminal\ShellToolkit.Terminal.csproj" />
     </ItemGroup>
 
 </Project>
