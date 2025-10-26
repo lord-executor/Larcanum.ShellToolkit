@@ -62,17 +62,17 @@ public class Launcher : IChildLauncher
         return cmd;
     }
 
-    public virtual Task<int> RunAsync(RootCommand rootCommand, string[] args, CancellationToken ct = default)
+    public virtual async Task<int> RunAsync(RootCommand rootCommand, string[] args, CancellationToken ct = default)
     {
         try
         {
             _parseResult = rootCommand.Parse(args);
             _launcherModule.ConfigureInvocationContext(_context, _parseResult);
-            return RunRootCommandAsync(_parseResult, ct);
+            return await RunRootCommandAsync(_parseResult, ct);
         }
         catch (Exception e)
         {
-            return Task.FromResult(_launcherModule.ExceptionHandler?.Invoke(e) ?? OnException(e));
+            return _launcherModule.ExceptionHandler?.Invoke(_context, e) ?? OnException(e);
         }
     }
 
@@ -111,20 +111,8 @@ public class Launcher : IChildLauncher
                 _context.Logger.LogWarning($"The operation was aborted - {cEx.Message}");
                 return 1;
             default:
-                LogException(_context.Logger, ex);
+                _context.Logger.LogError(ex, ex.ToString());
                 return 1;
-        }
-    }
-
-    protected virtual void LogException(ICliLogger logger, Exception e)
-    {
-        if (logger.IsEnabled(LogLevel.Debug))
-        {
-            logger.LogError(e, e.ToString());
-        }
-        else if (logger.IsEnabled(LogLevel.Error))
-        {
-            logger.LogError(e.Message);
         }
     }
 }

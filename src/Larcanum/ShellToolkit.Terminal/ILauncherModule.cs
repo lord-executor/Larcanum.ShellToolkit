@@ -6,7 +6,7 @@ namespace Larcanum.ShellToolkit.Terminal;
 
 public interface ILauncherModule
 {
-    public Func<Exception, int>? ExceptionHandler { get; }
+    public Func<LauncherContext, Exception, int>? ExceptionHandler { get; }
 
     IConfiguration GetConfiguration();
     void ConfigureRootServices(LauncherContext ctx);
