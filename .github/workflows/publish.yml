@@ -20,11 +20,13 @@ jobs:
               with:
                   dotnet-version: 9.0.x
 
-            # Pack the project with the version from the previous step
-            - name: Pack the project
+            - name: Pack ShellToolkit
               run: dotnet pack --configuration Release --output ./artifacts src/Larcanum/ShellToolkit/ShellToolkit.csproj
 
-            # Push the package to NuGet
+            - name: Pack ShellToolkit.Terminal
+              run: dotnet pack --configuration Release --output ./artifacts src/Larcanum/ShellToolkit.Terminal/ShellToolkit.Terminal.csproj
+
+            # Push the packages to NuGet
             - name: Push to NuGet
               env:
                   NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
