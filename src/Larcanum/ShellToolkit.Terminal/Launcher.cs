@@ -62,13 +62,13 @@ public class Launcher : IChildLauncher
         return cmd;
     }
 
-    public virtual Task<int> RunAsync(RootCommand rootCommand, string[] args)
+    public virtual Task<int> RunAsync(RootCommand rootCommand, string[] args, CancellationToken ct = default)
     {
         try
         {
             _parseResult = rootCommand.Parse(args);
             _launcherModule.ConfigureInvocationContext(_context, _parseResult);
-            return RunRootCommand(_parseResult, args);
+            return RunRootCommandAsync(_parseResult, ct);
         }
         catch (Exception e)
         {
@@ -76,7 +76,7 @@ public class Launcher : IChildLauncher
         }
     }
 
-    public virtual async Task<int> RunAsync<TCommand, TArg>(CommandDefinition<TCommand, TArg> definition, TArg arg, CancellationToken ct)
+    public virtual async Task<int> RunAsync<TCommand, TArg>(CommandDefinition<TCommand, TArg> definition, TArg arg, CancellationToken ct = default)
         where TCommand : class, ICommand<TArg>
         where TArg : IArguments<TArg>, new()
     {
@@ -93,14 +93,14 @@ public class Launcher : IChildLauncher
         };
     }
 
-    protected virtual async Task<int> RunRootCommand(ParseResult parseResult, string[] args)
+    protected virtual async Task<int> RunRootCommandAsync(ParseResult parseResult, CancellationToken ct)
     {
         _provider = _context.Services.BuildServiceProvider();
 
         return await parseResult.InvokeAsync(new InvocationConfiguration()
         {
             EnableDefaultExceptionHandler = false,
-        });
+        }, ct);
     }
 
     protected virtual int OnException(Exception ex)
