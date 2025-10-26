@@ -3,7 +3,6 @@ using System.CommandLine;
 using Larcanum.ShellToolkit.Terminal.Integration;
 using Larcanum.ShellToolkit.Terminal.Rendering;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -11,10 +10,8 @@ namespace Larcanum.ShellToolkit.Terminal;
 
 public class Launcher : IChildLauncher
 {
+    protected readonly LauncherContext _context;
     protected readonly ILauncherModule _launcherModule;
-    protected readonly IConfiguration _config;
-    protected readonly ServiceCollection _services;
-    protected readonly CliLogger _logger;
     protected readonly HashSet<string> _loadedModules = new HashSet<string>();
 
     private ParseResult? _parseResult;
@@ -23,16 +20,20 @@ public class Launcher : IChildLauncher
     public Launcher(ILauncherModule launcherModule)
     {
         _launcherModule = launcherModule;
-        _config = _launcherModule.GetConfiguration();
 
-        _services = new ServiceCollection();
-        _services.AddSingleton(_config);
-        _services.AddSingleton<IChildLauncher>(this);
+        _context = new LauncherContext()
+        {
+            Configuration = _launcherModule.GetConfiguration(),
+            Services = new ServiceCollection(),
+            Logger = new CliLogger(StandardStreams.Default, LogLevel.Information, enableHostWriter: true)
+        };
 
-        _launcherModule.ConfigureRootServices(_services, _config);
+        _context.Services.AddSingleton(_context.Configuration);
+        _context.Services.AddSingleton<IChildLauncher>(this);
 
-        _logger = new CliLogger(StandardStreams.Default, LogLevel.Information, enableHostWriter: true);
-        _services.AddSingleton<ICliLogger>(_logger);
+        _launcherModule.ConfigureRootServices(_context);
+
+        _context.Services.AddSingleton<ICliLogger>(_context.Logger);
     }
 
     public virtual Command Register<TCommand, TArg>(CommandDefinition<TCommand, TArg> definition)
@@ -42,15 +43,15 @@ public class Launcher : IChildLauncher
         var commandName = typeof(TCommand).FullName
                           ?? throw new ArgumentException("Command type must have a qualified name");
 
-        _services.AddKeyedSingleton<ICommandDefinition>(commandName, definition);
-        _services.AddScoped<TCommand>();
-        _services.AddKeyedScoped<ICommand<TArg>, TCommand>(commandName);
+        _context.Services.AddKeyedSingleton<ICommandDefinition>(commandName, definition);
+        _context.Services.AddScoped<TCommand>();
+        _context.Services.AddKeyedScoped<ICommand<TArg>, TCommand>(commandName);
 
         foreach (var mod in definition.Modules)
         {
             if (!_loadedModules.Contains(mod.Key))
             {
-                mod.ConfigureServices(_services, _config);
+                mod.ConfigureServices(_context.Services, _context.Configuration);
                 _loadedModules.Add(mod.Key);
             }
         }
@@ -66,12 +67,12 @@ public class Launcher : IChildLauncher
         try
         {
             _parseResult = rootCommand.Parse(args);
-            _launcherModule.ConfigureInvocationContext(_services, _config, _parseResult);
+            _launcherModule.ConfigureInvocationContext(_context, _parseResult);
             return RunRootCommand(_parseResult, args);
         }
         catch (Exception e)
         {
-            return Task.FromResult(OnException(e));
+            return Task.FromResult(_launcherModule.ExceptionHandler?.Invoke(e) ?? OnException(e));
         }
     }
 
@@ -94,7 +95,7 @@ public class Launcher : IChildLauncher
 
     protected virtual async Task<int> RunRootCommand(ParseResult parseResult, string[] args)
     {
-        _provider = _services.BuildServiceProvider();
+        _provider = _context.Services.BuildServiceProvider();
 
         return await parseResult.InvokeAsync(new InvocationConfiguration()
         {
@@ -107,10 +108,10 @@ public class Launcher : IChildLauncher
         switch (ex)
         {
             case OperationCanceledException cEx:
-                _logger.LogWarning($"The operation was aborted - {cEx.Message}");
+                _context.Logger.LogWarning($"The operation was aborted - {cEx.Message}");
                 return 1;
             default:
-                LogException(_logger, ex);
+                LogException(_context.Logger, ex);
                 return 1;
         }
     }
