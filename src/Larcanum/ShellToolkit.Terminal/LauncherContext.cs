@@ -7,7 +7,7 @@ namespace Larcanum.ShellToolkit.Terminal;
 
 public class LauncherContext
 {
-    public IConfiguration Configuration { get; init; }
-    public ServiceCollection Services { get; init; }
-    public CliLogger Logger { get; init; }
+    public required IConfiguration Configuration { get; init; }
+    public required ServiceCollection Services { get; init; }
+    public required CliLogger Logger { get; init; }
 }
