@@ -1,6 +1,5 @@
+# ShellToolkit
 [![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/lord-executor/Larcanum.ShellToolkit/blob/master/LICENSE) [![Nuget](https://img.shields.io/nuget/v/Larcanum.ShellToolkit.svg)](https://www.nuget.org/packages/Larcanum.ShellToolkit/)
-
-# Overview
 
 The goal of this library is to provide a set of tools to start and interact with processes on the host system in a way that is similarly easy to use as _Bash_ or oder shells. First and foremost this means providing a convenient API on top of the rather crusty and awkward `System.Diagnostics.Process` and `System.Diagnostics.ProcessStartInfo`. On top of that, the library provides methods for building _pipelines_ of commands similar to how pipes work in Bash.
 
@@ -41,3 +40,19 @@ if (await runner.ExecAsync(pipeline) != 0)
 var result = await File.ReadAllTextAsync(tempFile.FullName);
 // result = "Microsoft.Extensions.Logging.Abstractions"
 ```
+
+# ShellToolkit.Terminal
+[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/lord-executor/Larcanum.ShellToolkit/blob/master/LICENSE) [![Nuget](https://img.shields.io/nuget/v/Larcanum.ShellToolkit.Terminal.svg)](https://www.nuget.org/packages/Larcanum.ShellToolkit.Terminal/)
+
+This is a supplemental library for creating CLI programs based on the [`System.CommandLine`](https://www.nuget.org/packages/System.CommandLine) library from Microsoft.
+Up until _beta4_ of that library in 2022, it came with a set of additional libraries to deal with common tasks for CLI programs like output rendering, argument binding, etc. Starting with _beta5_ in Summer of 2025, all of these additional libraries were deprecated and it is now up to other parties to help with that.
+
+This is what _ShellToolkit.Terminal_ aims to do. Specifically, this library deals with these pain points of non-trivial CLI tools:
+
+- Rendering colored output to the terminal and providing an injectable _logger_ abstraction
+  - Based on `Microsoft.Extensions.Logging`
+- Configuration management and dependency injection with an object-oriented command abstraction
+  - Based on `Microsoft.Extensions.Configuration` and `Microsoft.Extensions.DependencyInjection`
+- Strongly typed binding to command arguments with simple classes
+
+TODO: Details and examples

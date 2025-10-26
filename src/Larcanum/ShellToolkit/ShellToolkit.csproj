@@ -1,49 +1,49 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>Larcanum.ShellToolkit</RootNamespace>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>../ShellToolkit.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Larcanum.ShellToolkit</RootNamespace>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>../ShellToolkit.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
 
-  <!-- NuGet package config-->
-  <PropertyGroup>
-    <PackageId>Larcanum.ShellToolkit</PackageId>
-    <Authors>Lukas Angerer</Authors>
-    <Description>Library for convenient shell-like process interaction</Description>
-    <Copyright>Copyright 2025 Lukas Angerer</Copyright>
-    <PackageProjectUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>shell;ProcessInfo</PackageTags>
-    <!-- Create symbol package - https://learn.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg -->
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
+    <!-- NuGet package config-->
+    <PropertyGroup>
+        <PackageId>Larcanum.ShellToolkit</PackageId>
+        <Authors>Lukas Angerer</Authors>
+        <Description>Library for convenient shell-like process interaction</Description>
+        <Copyright>Copyright 2025 Lukas Angerer</Copyright>
+        <PackageProjectUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>shell;ProcessInfo</PackageTags>
+        <!-- Create symbol package - https://learn.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
 
-  <!-- See https://github.com/clairernovotny/DeterministicBuilds -->
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-  </PropertyGroup>
+    <!-- See https://github.com/clairernovotny/DeterministicBuilds -->
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Larcanum.GitInfo" Version="1.1.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Larcanum.GitInfo" Version="1.1.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="..\..\..\README.md" Pack="true" PackagePath="\">
-      <Link>README.md</Link>
-    </Content>
-  </ItemGroup>
+    <ItemGroup>
+      <Content Include="..\..\..\README.md" Pack="true" PackagePath="\">
+        <Link>README.md</Link>
+      </Content>
+    </ItemGroup>
 
 </Project>
