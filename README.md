@@ -55,4 +55,200 @@ This is what _ShellToolkit.Terminal_ aims to do. Specifically, this library deal
   - Based on `Microsoft.Extensions.Configuration` and `Microsoft.Extensions.DependencyInjection`
 - Strongly typed binding to command arguments with simple classes
 
-TODO: Details and examples
+## CliLogger
+The `CliLogger` is a lightweight, terminal-aware logger that implements `Microsoft.Extensions.Logging.ILogger` and adds a few CLI-specific conveniences.
+
+- Colorized output by `LogLevel` using ANSI sequences (when supported):
+  - `Trace` → light gray
+  - `Debug` → light cyan
+  - `Information` → light blue
+  - `Warning` → yellow
+  - `Error`/`Critical` → red.
+- Three output targets:
+  - `WriteOutput(...)` → STDOUT
+  - `WriteError(...)` → STDERR
+  - `WriteHost(...)` → prints directly to the console host when possible (bypasses STDOUT/STDERR). On Windows this uses the legacy `\\.\CON`, on
+    Unix-like systems `/dev/tty`. If a host writer is not available it falls back to STDERR.
+- Runtime control of verbosity via `SetLogLevel(LogLevel level)`.
+- Simple prompting helpers: `Prompt(...)` and `PromptYesNo(...)`.
+
+The `Launcher` wires a `CliLogger` into DI for you and exposes it as `ICliLogger` so that it can be injected into commands.
+
+Typical usage inside a command handler:
+
+```csharp
+public class MyCommand : ICommand<MyArgs>
+{
+    private readonly ICliLogger _log;
+
+    public MyCommand(ICliLogger log)
+    {
+        _log = log;
+    }
+
+    public Task<int> RunAsync(MyArgs args, CancellationToken ct = default)
+    {
+        _log.LogInformation("Starting work for {Path}", args.Path);
+
+        if (!_log.PromptYesNo("Proceed?"))
+        {
+            _log.LogWarning("Aborted by user.");
+            return Task.FromResult(1);
+        }
+
+        _log.LogContent("This goes to STDOUT as-is (no level prefix).\n");
+        _log.WriteHost(new AnsiTextSpan("Host-only note", bold: true));
+        return Task.FromResult(0);
+    }
+}
+```
+
+Use `LogContent(...)` for content that should be machine-consumable on STDOUT (e.g., JSON), keeping log messages on STDERR.
+
+## Binding Arguments to Classes
+Rather than binding options and arguments to method parameters, `ShellToolkit.Terminal` lets you bind them to a simple POCO that implements `IArguments<T>`.
+
+- Define an arguments class: `public class MyArgs : IArguments<MyArgs>`
+- Implement a single static method `Register(...)` that declares all bindings using `BindingBuilder<T>`.
+- Supported bindings:
+  - `BindOption(expr, name, description)` with fluent helpers:
+  - `BindArgument(expr, name, description)`
+  - `BindUnmatchedTokens(expr)` to capture extra tokens
+  - `BindConfig(cmd => { ... })` to tweak the underlying `System.CommandLine.Command`
+
+Example:
+
+```csharp
+public sealed class MyArgs : IArguments<MyArgs>
+{
+    public string? Path { get; set; }
+    public bool Verbose { get; set; }
+    public IReadOnlyList<string>? Extra { get; set; }
+
+    public static IEnumerable<ISymbolBinding<MyArgs>> Register(BindingBuilder<MyArgs> b)
+    {
+        yield return b.BindOption(x => x.Path, "--path", "Path to something")
+            .WithAlias("-p")
+            .WithValidator(r =>
+            {
+                var v = r.GetValueForOption<string?>("--path");
+                if (string.IsNullOrWhiteSpace(v))
+                {
+                    r.ErrorMessage = "--path must not be empty";
+                }
+            });
+
+        yield return b.BindOption(x => x.Verbose, "--verbose", "Verbose output")
+            .WithAlias("-v")
+            .WithDefaultValue(false);
+
+        yield return b.BindUnmatchedTokens(x => x.Extra!);
+
+        // Optional low-level command tweaks
+        yield return b.BindConfig(cmd => cmd.AddAlias("mi"));
+    }
+}
+```
+
+At runtime the `ArgumentFactory<T>` automatically:
+- Adds declared symbols to the command instance
+- Builds a `MyArgs` instance from the `ParseResult` using compiled expression trees (no reflection at invocation time)
+
+## Strongly Typed Command
+Commands are regular classes with DI and strongly typed args:
+
+- Implement `ICommand<TArg>` with a single `RunAsync` method
+- Describe your command via `CommandDefinition<TCommand, TArg>`
+- Register with the `Launcher` and run
+
+```csharp
+public sealed class SampleCommand : ICommand<SampleArgs>
+{
+    private readonly ICliLogger _logger;
+    public SampleCommand(ICliLogger logger) { _logger = logger; }
+    public Task<int> RunAsync(SampleArgs args, CancellationToken ct = default)
+    {
+        _logger.LogInformation("Path = {Path}", args.Path);
+        return Task.FromResult(0);
+    }
+}
+```
+
+## Example Program
+
+```cs
+var bootModule = new LauncherModule();
+var launcher = new Launcher(bootModule);
+var rootCommand = new RootCommand("Demo");
+
+rootCommand.Add(launcher.Register(
+    new CommandDefinition<SampleCommand, SampleArgs>(
+        new Command("gitinfo", "Gathers information from git"))));
+
+return await launcher.RunAsync(bootModule.RootCommand, args);
+
+public class LauncherModule : ILauncherModule
+{
+    public Func<LauncherContext, Exception, int>? ExceptionHandler => null;
+
+    public LauncherModule()
+    {
+    }
+
+    public IConfiguration GetConfiguration()
+    {
+        return new ConfigurationBuilder()
+            .AddJsonFile("appSettings.json")
+            .Build();
+    }
+
+    public void ConfigureRootServices(LauncherContext ctx)
+    {
+    }
+
+    public void ConfigureInvocationContext(LauncherContext ctx, ParseResult parseResult)
+    {
+    }
+}
+
+public class SampleArgs : IArguments<SampleArgs>
+{
+    public string? Path { get; set; }
+
+    public static IEnumerable<ISymbolBinding<SampleArgs>> Register(BindingBuilder<SampleArgs> builder)
+    {
+        yield return builder.BindOption(x => x.Path, "--path", "Path to something");
+    }
+}
+
+public class SampleCommand : ICommand<GitInfoArgs>
+{
+    public static CommandDefinition<GitInfoCommand, GitInfoArgs> Def = new Command("gitinfo", "Gathers information from git");
+
+    private readonly ICliLogger _logger;
+    private readonly GitShellCommands _gitShellCommands;
+
+    public SampleCommand(ICliLogger logger, GitShellCommands gitShellCommands)
+    {
+        _logger = logger;
+        _gitShellCommands = gitShellCommands;
+    }
+
+    public async Task<int> RunAsync(GitInfoArgs args, CancellationToken ct = default)
+    {
+        var gitInfo = new Dictionary<string, string>
+        {
+            ["branch"] = await _gitShellCommands.CurrentBranch(args.Path, ct),
+            ["commit"] = await _gitShellCommands.CurrentCommit(args.Path, ct),
+            ["version"] = await _gitShellCommands.Describe(args.Path, ct)
+        };
+
+        _logger.LogContent(JsonSerializer.Serialize(gitInfo, new JsonSerializerOptions { WriteIndented = true }));
+
+        return ExitCodes.Ok;
+    }
+}
+
+```
+
+See https://github.com/lord-executor/ModularCliTemplate for a proper example with additional context.
