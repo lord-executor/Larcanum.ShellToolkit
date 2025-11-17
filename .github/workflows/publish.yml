@@ -12,13 +12,13 @@ jobs:
         steps:
             # Checkout the repository
             - name: Checkout code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v5
 
             # Setup .NET Core SDK
             - name: Setup .NET Core
-              uses: actions/setup-dotnet@v3
+              uses: actions/setup-dotnet@v5
               with:
-                  dotnet-version: 9.0.x
+                  dotnet-version: 10.0.x
 
             - name: Pack ShellToolkit
               run: dotnet pack --configuration Release --output ./artifacts src/Larcanum/ShellToolkit/ShellToolkit.csproj
