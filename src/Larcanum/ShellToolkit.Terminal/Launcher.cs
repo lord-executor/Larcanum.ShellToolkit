@@ -17,7 +17,7 @@ public class Launcher : IChildLauncher
     private ParseResult? _parseResult;
     private ServiceProvider? _provider;
 
-    public Launcher(ILauncherModule launcherModule)
+    public Launcher(ILauncherModule launcherModule, bool enableHostWriter = true)
     {
         _launcherModule = launcherModule;
 
@@ -25,7 +25,7 @@ public class Launcher : IChildLauncher
         {
             Configuration = _launcherModule.GetConfiguration(),
             Services = new ServiceCollection(),
-            Logger = new CliLogger(StandardStreams.Default, LogLevel.Information, enableHostWriter: true)
+            Logger = new CliLogger(StandardStreams.Default, LogLevel.Information, enableHostWriter)
         };
 
         _context.Services.AddSingleton(_context.Configuration);
