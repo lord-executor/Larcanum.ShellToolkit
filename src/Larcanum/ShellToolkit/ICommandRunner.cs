@@ -9,5 +9,5 @@ public interface ICommandRunner
     Task<CommandResult> CaptureAsync(ICommand cmd, CancellationToken ct = default);
     Task<CommandResult> CaptureAsync(IPipeline pipeline, CancellationToken ct = default);
     void ExecDetached(ICommand cmd);
-    void ExecDetached(IPipeline cmd);
+    void ExecDetached(IPipeline pipeline);
 }
