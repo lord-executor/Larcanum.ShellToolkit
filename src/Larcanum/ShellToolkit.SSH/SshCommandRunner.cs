@@ -6,35 +6,40 @@ namespace Larcanum.ShellToolkit.SSH;
 
 public class SshCommandRunner : ICommandRunner, ISshExecutionContext
 {
-    public static SshCommandRunner Create(SshClient client)
+    public static SshCommandRunner Create(ISshClient client)
     {
         return new SshCommandRunner(client, new Settings(), new NullLogger<SshCommandRunner>());
     }
 
-    public static SshCommandRunner Create(SshClient client, Settings settings)
+    public static SshCommandRunner Create(ISshClient client, Settings settings)
     {
         return new SshCommandRunner(client, settings, new NullLogger<SshCommandRunner>());
     }
 
-    public static SshCommandRunner Create(SshClient client, ILogger<SshCommandRunner> logger)
+    public static SshCommandRunner Create(ISshClient client, ILogger<SshCommandRunner> logger)
     {
         return new SshCommandRunner(client, new Settings(), logger);
     }
 
-    private readonly SshClient _client;
+    private readonly ISshClient _client;
     private readonly Settings _settings;
     private readonly ILogger _logger;
 
-    SshClient ISshExecutionContext.Client => _client;
+    ISshClient ISshExecutionContext.Client => _client;
     Settings IExecutionContext.Settings => _settings;
     ILogger IExecutionContext.Logger => _logger;
 
-    public SshCommandRunner(SshClient client, Settings settings, ILogger<SshCommandRunner> logger)
+    void IExecutionContext.LogCommand(object command, CommandMode mode)
+    {
+        _logger.LogDebug("[sshex{m}@{host}]: {cmd}", mode.AsString(), _client.ConnectionInfo.Host, command);
+    }
+
+    public SshCommandRunner(ISshClient client, Settings settings, ILogger<SshCommandRunner> logger)
         : this(client, settings, (ILogger)logger)
     {
     }
 
-    public SshCommandRunner(SshClient client, Settings settings, ILogger logger)
+    public SshCommandRunner(ISshClient client, Settings settings, ILogger logger)
     {
         _client = client;
         _settings = settings;

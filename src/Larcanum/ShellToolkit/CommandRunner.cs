@@ -26,6 +26,11 @@ public class CommandRunner : ICommandRunner, IExecutionContext
     Settings IExecutionContext.Settings => _settings;
     ILogger IExecutionContext.Logger => _logger;
 
+    void IExecutionContext.LogCommand(object command, CommandMode mode)
+    {
+        _logger.LogDebug("[exec{m}]: {cmd}", mode.AsString(), command);
+    }
+
     public CommandRunner(Settings settings, ILogger<CommandRunner> logger)
         : this(settings, (ILogger)logger)
     {

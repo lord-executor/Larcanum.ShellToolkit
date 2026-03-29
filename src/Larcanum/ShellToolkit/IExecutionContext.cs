@@ -6,4 +6,6 @@ public interface IExecutionContext
 {
     Settings Settings { get; }
     ILogger Logger { get; }
+
+    void LogCommand(object command, CommandMode mode);
 }

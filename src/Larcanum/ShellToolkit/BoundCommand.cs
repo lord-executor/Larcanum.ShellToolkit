@@ -17,7 +17,7 @@ public class BoundCommand : IBoundCommand
 
     public async Task<CommandResult> CaptureAsync(CancellationToken ct = default)
     {
-        _context.Logger.LogDebug("[exec-bg]: {cmd}", _command);
+        _context.LogCommand(_command, CommandMode.Capture);
 
         var output = new StringWriter();
         var error = new StringWriter();
@@ -33,7 +33,7 @@ public class BoundCommand : IBoundCommand
 
     public Task<int> ExecAsync(CancellationToken ct = default)
     {
-        _context.Logger.LogInformation("[exec]: {cmd}", _command);
+        _context.LogCommand(_command, CommandMode.Run);
 
         var info = _command.ToProcessStartInfo();
         info.UseShellExecute = false;
@@ -50,7 +50,7 @@ public class BoundCommand : IBoundCommand
 
     public void ExecDetached()
     {
-        _context.Logger.LogDebug("[exec-dt]: {cmd}", _command);
+        _context.LogCommand(_command, CommandMode.Detach);
 
         var info = _command.ToProcessStartInfo();
         info.UseShellExecute = false;

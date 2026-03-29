@@ -4,5 +4,5 @@ namespace Larcanum.ShellToolkit.SSH;
 
 public interface ISshExecutionContext : IExecutionContext
 {
-    SshClient Client { get; }
+    ISshClient Client { get; }
 }

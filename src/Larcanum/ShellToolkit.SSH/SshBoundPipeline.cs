@@ -15,7 +15,7 @@ public class SshBoundPipeline : IBoundCommand
 
     public async Task<CommandResult> CaptureAsync(CancellationToken ct = default)
     {
-        _context.Logger.LogDebug("[ssh-exec-bg]: {pipeline}", _pipeline);
+        _context.LogCommand(_pipeline, CommandMode.Capture);
 
         using var cmd = _context.Client.CreateCommand(_pipeline.ToString() ?? string.Empty);
         var task = cmd.ExecuteAsync(ct);
@@ -31,11 +31,11 @@ public class SshBoundPipeline : IBoundCommand
 
     public async Task<int> ExecAsync(CancellationToken ct = default)
     {
-        _context.Logger.LogInformation("[ssh-exec]: {pipeline}", _pipeline);
+        _context.LogCommand(_pipeline, CommandMode.Run);
 
         using var cmd = _context.Client.CreateCommand(_pipeline.ToString() ?? string.Empty);
         var asyncResult = cmd.BeginExecute();
-        
+
         var outputTask = Task.Run(() => {
             using var reader = new StreamReader(cmd.OutputStream);
             while (!asyncResult.IsCompleted || !reader.EndOfStream)
@@ -62,7 +62,7 @@ public class SshBoundPipeline : IBoundCommand
 
     public void ExecDetached()
     {
-        _context.Logger.LogDebug("[ssh-exec-dt]: {pipeline}", _pipeline);
+        _context.LogCommand(_pipeline, CommandMode.Detach);
 
         var cmd = _context.Client.CreateCommand(_pipeline.ToString() ?? string.Empty);
         cmd.BeginExecute();
