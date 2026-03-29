@@ -26,6 +26,9 @@ jobs:
             - name: Pack ShellToolkit.Terminal
               run: dotnet pack --configuration Release --output ./artifacts src/Larcanum/ShellToolkit.Terminal/ShellToolkit.Terminal.csproj
 
+            - name: Pack ShellToolkit.SSH
+              run: dotnet pack --configuration Release --output ./artifacts src/Larcanum/ShellToolkit.SSH/ShellToolkit.SSH.csproj
+
             # Push the packages to NuGet
             - name: Push to NuGet
               env:

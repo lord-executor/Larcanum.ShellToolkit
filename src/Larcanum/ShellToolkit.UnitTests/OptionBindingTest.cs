@@ -12,8 +12,8 @@ public class OptionBindingTest
 {
     private class TestArgWithDefault : IArguments<TestArgWithDefault>
     {
-        public string NonNullableNotInitializedWithoutDefault { get; set; }
-        public string NonNullableNotInitializedWithDefault { get; set; }
+        public string NonNullableNotInitializedWithoutDefault { get; set; } = default!;
+        public string NonNullableNotInitializedWithDefault { get; set; } = default!;
         public string NonNullableInitializedWithoutDefault { get; set; } = "initial";
         public string NonNullableInitializedWithDefault { get; set; } = "initial";
         public string? NullableNotInitializedWithoutDefault { get; set; }
