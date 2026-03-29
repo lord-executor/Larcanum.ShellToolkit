@@ -73,6 +73,7 @@ public partial class Command : ICommand
 
     public override string ToString()
     {
-        return $"{_cmd} {string.Join(" ", _cmdArgs.Select(a => a.DisplayText))}";
+        var args = string.Join(" ", _cmdArgs.Select(a => a.DisplayText));
+        return string.IsNullOrEmpty(args) ? _cmd : $"{_cmd} {args}";
     }
 }

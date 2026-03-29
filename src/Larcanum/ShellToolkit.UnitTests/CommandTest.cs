@@ -67,4 +67,41 @@ public class CommandTest
         psi.FileName.Should().Be("cmd.exe");
         psi.ArgumentList.Should().ContainInOrder(["/c", @"C:\Program Files\dotnet"]);
     }
+
+    [Fact]
+    public void Create_WithVariousArgTypes_PopulatesArgumentList()
+    {
+        var args = new IArg[] { new StringArg("arg1"), (StringArg)"arg2" };
+        var cmd = Command.Create("test", args);
+
+        var psi = cmd.ToProcessStartInfo();
+        psi.ArgumentList.Should().ContainInOrder(["arg1", "arg2"]);
+    }
+
+    [Fact]
+    public void ToString_IncludesArguments()
+    {
+        var cmd = Command.Create("echo", ["hello", "world"]);
+        cmd.ToString().Should().Be("echo hello world");
+    }
+
+    [Fact]
+    public void Create_SingleStringWithMixedQuotes_ParsesCorrectly()
+    {
+        var cmd = Command.Create("sh -c \"ls -l | grep 'foo'\"");
+        var psi = cmd.ToProcessStartInfo();
+
+        psi.FileName.Should().Be("sh");
+        psi.ArgumentList.Should().ContainInOrder(["-c", "ls -l | grep 'foo'"]);
+    }
+
+    [Fact]
+    public void Create_SingleStringWithEscapedQuotes_ParsesCorrectly()
+    {
+        var cmd = Command.Create(@"echo ""He said \""Hello\""""");
+        var psi = cmd.ToProcessStartInfo();
+
+        psi.FileName.Should().Be("echo");
+        psi.ArgumentList.Should().ContainInOrder(["He said \"Hello\""]);
+    }
 }

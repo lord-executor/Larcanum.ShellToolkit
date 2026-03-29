@@ -61,6 +61,6 @@ public class Pipeline : IPipeline
 
     public override string ToString()
     {
-        return string.Join(string.Empty, _steps).Substring(3);
+        return string.Join(string.Empty, _steps).TrimStart(' ', '|');
     }
 }
