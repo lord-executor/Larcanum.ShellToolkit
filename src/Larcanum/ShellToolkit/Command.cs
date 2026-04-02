@@ -45,25 +45,26 @@ public partial class Command : ICommand
         return new Command(commandName, args[1..].Select(s => (StringArg)s));
     }
 
-    private readonly string _cmd;
-    private readonly IEnumerable<IArg> _cmdArgs;
+    public string CommandPath { get; private set; }
+    public IEnumerable<IArg> Arguments { get; private set; }
+
     private readonly string _workingDir = Environment.CurrentDirectory;
 
     private Command(string cmd, IEnumerable<IArg> cmdArgs)
     {
-        _cmd = cmd;
-        _cmdArgs = cmdArgs;
+        CommandPath = cmd;
+        Arguments = cmdArgs;
     }
 
     public ProcessStartInfo ToProcessStartInfo()
     {
         var info = new ProcessStartInfo
         {
-            FileName = _cmd,
+            FileName = CommandPath,
             WorkingDirectory = _workingDir,
         };
 
-        foreach (var arg in _cmdArgs)
+        foreach (var arg in Arguments)
         {
             info.ArgumentList.Add(arg.Argument);
         }
@@ -73,7 +74,7 @@ public partial class Command : ICommand
 
     public override string ToString()
     {
-        var args = string.Join(" ", _cmdArgs.Select(a => a.DisplayText));
-        return string.IsNullOrEmpty(args) ? _cmd : $"{_cmd} {args}";
+        var args = string.Join(" ", Arguments.Select(a => a.DisplayText));
+        return string.IsNullOrEmpty(args) ? CommandPath : $"{CommandPath} {args}";
     }
 }

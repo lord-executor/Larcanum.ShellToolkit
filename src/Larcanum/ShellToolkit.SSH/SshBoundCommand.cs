@@ -15,7 +15,7 @@ public class SshBoundCommand : IBoundCommand
     {
         _context.LogCommand(_command, CommandMode.Capture);
 
-        using var cmd = _context.Client.CreateCommand(_command.ToString() ?? string.Empty);
+        using var cmd = _context.Client.CreateCommand(_command.ToCommandText());
         var task = cmd.ExecuteAsync(ct);
         await task;
 
@@ -37,7 +37,7 @@ public class SshBoundCommand : IBoundCommand
         // However, SSH.NET doesn't easily "forward" the local console to the remote process
         // in the same way Process.Start(info) does locally when CreateNoWindow = false.
 
-        using var cmd = _context.Client.CreateCommand(_command.ToString() ?? string.Empty);
+        using var cmd = _context.Client.CreateCommand(_command.ToCommandText());
         // We want to see the output in real-time if it's "ExecAsync" (analogous to local ExecAsync)
         // CommandRunner.ExecAsync doesn't redirect output, so it just goes to the console.
         // For SSH, we need to explicitly read and write to console if we want that behavior.
@@ -72,7 +72,7 @@ public class SshBoundCommand : IBoundCommand
     {
         _context.LogCommand(_command, CommandMode.Detach);
 
-        var cmd = _context.Client.CreateCommand(_command.ToString() ?? string.Empty);
+        var cmd = _context.Client.CreateCommand(_command.ToCommandText());
         cmd.BeginExecute();
         // Note: we are not disposing cmd here because it needs to run in background.
         // This might leak if not careful, but SSH.NET's SshCommand doesn't have a
