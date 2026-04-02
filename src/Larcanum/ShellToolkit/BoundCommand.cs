@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 
-using Microsoft.Extensions.Logging;
-
 namespace Larcanum.ShellToolkit;
 
 public class BoundCommand : IBoundCommand
@@ -55,7 +53,7 @@ public class BoundCommand : IBoundCommand
         var info = _command.ToProcessStartInfo();
         info.UseShellExecute = false;
 
-        Process.Start(info);
+        Process.Start(info)?.Exited += (p, _) => (p as Process)?.Dispose();
     }
 
     public IBoundCommand ThrowOnError()

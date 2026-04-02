@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace Larcanum.ShellToolkit;
@@ -54,22 +53,6 @@ public partial class Command : ICommand
     {
         CommandPath = cmd;
         Arguments = cmdArgs;
-    }
-
-    public ProcessStartInfo ToProcessStartInfo()
-    {
-        var info = new ProcessStartInfo
-        {
-            FileName = CommandPath,
-            WorkingDirectory = _workingDir,
-        };
-
-        foreach (var arg in Arguments)
-        {
-            info.ArgumentList.Add(arg.Argument);
-        }
-
-        return info;
     }
 
     public override string ToString()
