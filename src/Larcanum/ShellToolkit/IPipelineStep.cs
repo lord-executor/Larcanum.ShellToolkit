@@ -2,5 +2,5 @@ namespace Larcanum.ShellToolkit;
 
 public interface IPipelineStep
 {
-    Task<PipelineOutput> Connect(PipelineOutput previous, OutputMode mode, CancellationToken ct = default);
+    Task<IPipelineOutput> Connect(IPipelineOutput previous, OutputMode mode, CancellationToken ct = default);
 }

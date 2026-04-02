@@ -21,7 +21,7 @@ public class Pipeline : IPipeline
         return this;
     }
 
-    public async Task<CommandResult> Run(PipelineOutput initial, OutputMode mode, CancellationToken ct = default)
+    public async Task<CommandResult> Run(IPipelineOutput initial, OutputMode mode, CancellationToken ct = default)
     {
         // This process is certainly not the most efficient, especially for longer running commands with large
         // outputs. This approach waits for each step to complete before starting the next one and at any time there
@@ -34,29 +34,25 @@ public class Pipeline : IPipeline
         {
             var isLast = (i == _steps.Count - 1);
             var output = await _steps[i].Connect(previous, isLast ? mode : OutputMode.Capture, ct);
-            if (previous.Process != null)
+            lastExitCode = await previous.WaitForExit(ct);
+            if (lastExitCode != 0)
             {
-                await previous.Process.WaitForExitAsync(ct);
-                lastExitCode = previous.Process.ExitCode;
-                previous.Process.Dispose();
+                return new CommandResult
+                {
+                    ExitCode = lastExitCode,
+                    Output = previous.Out == null ? string.Empty : await previous.Out.ReadToEndAsync(ct),
+                };
             }
             previous = output;
         }
 
-        if (previous.Process != null)
+        lastExitCode = await previous.WaitForExit(ct);
+
+        return new CommandResult
         {
-            await previous.Process.WaitForExitAsync(ct);
-            lastExitCode = previous.Process.ExitCode;
-            previous.Process.Dispose();
-
-            return new CommandResult
-            {
-                ExitCode = lastExitCode,
-                Output = previous.Out == null ? string.Empty : await previous.Out.ReadToEndAsync(ct)
-            };
-        }
-
-        return new CommandResult { ExitCode = lastExitCode };
+            ExitCode = lastExitCode,
+            Output = previous.Out == null ? string.Empty : await previous.Out.ReadToEndAsync(ct)
+        };
     }
 
     public override string ToString()

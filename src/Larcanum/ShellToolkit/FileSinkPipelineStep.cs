@@ -12,7 +12,7 @@ public class FileSinkPipelineStep : IPipelineStep
         _file = file;
     }
 
-    public async Task<PipelineOutput> Connect(PipelineOutput previous, OutputMode mode, CancellationToken ct = default)
+    public async Task<IPipelineOutput> Connect(IPipelineOutput previous, OutputMode mode, CancellationToken ct = default)
     {
         if (previous.Out == null)
         {
@@ -29,7 +29,7 @@ public class FileSinkPipelineStep : IPipelineStep
         stream.SetLength(0);
         await previous.Out.BaseStream.CopyToAsync(stream, ct);
 
-        return PipelineOutput.Empty;
+        return EmptyPipelineOutput.Instance;
     }
 
     public override string ToString()
