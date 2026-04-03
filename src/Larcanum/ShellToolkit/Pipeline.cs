@@ -4,20 +4,14 @@ public class Pipeline : IPipeline
 {
     private readonly List<IPipelineStep> _steps = [];
 
-    public Pipeline(ICommand cmd)
+    public Pipeline(IPipelineStep step)
     {
-        _steps.Add(new CommandPipelineStep(cmd));
+        AddStep(step);
     }
 
-    public IPipeline Pipe(ICommand cmd)
+    public IPipeline AddStep(IPipelineStep step)
     {
-        _steps.Add(new CommandPipelineStep(cmd));
-        return this;
-    }
-
-    public IPipeline Pipe(FileInfo file)
-    {
-        _steps.Add(new FileSinkPipelineStep(file));
+        _steps.Add(step);
         return this;
     }
 

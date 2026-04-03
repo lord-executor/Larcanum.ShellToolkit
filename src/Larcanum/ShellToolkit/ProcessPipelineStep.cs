@@ -7,11 +7,11 @@ namespace Larcanum.ShellToolkit;
 /// method and returns its <see cref="ProcessPipelineOutput"/> so that it can be used in the next step of the pipeline. This
 /// is analogous to the shell "pipe" operator "|".
 /// </summary>
-public class CommandPipelineStep : IPipelineStep
+public class ProcessPipelineStep : IPipelineStep
 {
     private readonly ICommand _cmd;
 
-    public CommandPipelineStep(ICommand cmd)
+    public ProcessPipelineStep(ICommand cmd)
     {
         _cmd = cmd;
     }

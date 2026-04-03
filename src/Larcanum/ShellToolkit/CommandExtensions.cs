@@ -8,12 +8,12 @@ public static class CommandExtensions
     {
         public IPipeline Pipe(ICommand next)
         {
-            return new Pipeline(command).Pipe(next);
+            return new Pipeline(new ProcessPipelineStep(command)).Pipe(next);
         }
 
         public IPipeline Pipe(FileInfo file)
         {
-            return new Pipeline(command).Pipe(file);
+            return new Pipeline(new ProcessPipelineStep(command)).Pipe(file);
         }
 
         internal ProcessStartInfo ToProcessStartInfo()

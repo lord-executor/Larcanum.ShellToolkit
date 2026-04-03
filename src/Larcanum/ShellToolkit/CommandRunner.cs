@@ -42,33 +42,8 @@ public class CommandRunner : ICommandRunner, IExecutionContext
         _logger = logger;
     }
 
-    public IBoundCommand Bind(ICommand command)
-    {
-        return new BoundCommand(this, command);
-    }
-
     public IBoundCommand Bind(IPipeline pipeline)
     {
         return new BoundPipeline(this, pipeline);
-    }
-
-    public Task<int> ExecAsync(ICommand cmd, CancellationToken ct = default)
-    {
-        return Bind(cmd).ExecAsync(ct);
-    }
-
-    public Task<int> ExecAsync(IPipeline pipeline, CancellationToken ct = default)
-    {
-        return Bind(pipeline).ExecAsync(ct);
-    }
-
-    public Task<CommandResult> CaptureAsync(ICommand cmd, CancellationToken ct = default)
-    {
-        return Bind(cmd).CaptureAsync(ct);
-    }
-
-    public Task<CommandResult> CaptureAsync(IPipeline pipeline, CancellationToken ct = default)
-    {
-        return Bind(pipeline).CaptureAsync(ct);
     }
 }

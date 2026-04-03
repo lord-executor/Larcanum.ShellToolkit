@@ -10,8 +10,4 @@ public enum OutputMode
     /// Output is captured in <see cref="CommandResult.Output"/>
     /// </summary>
     Capture,
-    /// <summary>
-    /// Output is discarded.
-    /// </summary>
-    None,
 }
