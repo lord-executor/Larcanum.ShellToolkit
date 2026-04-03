@@ -25,12 +25,6 @@ public class BoundPipeline : IBoundCommand
         return (await _pipeline.Run(OutputMode.Default, ct)).ExitCode;
     }
 
-    public void ExecDetached()
-    {
-        _context.Logger.LogDebug("[exec-dt]: {pipeline}", _pipeline);
-        _pipeline.Run(OutputMode.Default, CancellationToken.None);
-    }
-
     public IBoundCommand ThrowOnError()
     {
         return new BoundErrorHandler(_context, this);

@@ -23,5 +23,15 @@ public static class PipelineOutputExtensinos
         {
             return output.ErrorReader.ReadToEndAsync(ct);
         }
+
+        public async Task<CommandResult> ToCommandResult(int exitCode, CancellationToken ct = default)
+        {
+            return new CommandResult
+            {
+                ExitCode = exitCode,
+                Output = await output.ReadAllOutput(ct),
+                Error = await output.ReadAllError(ct),
+            };
+        }
     }
 }

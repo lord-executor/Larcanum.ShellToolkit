@@ -14,8 +14,14 @@ public class ProcessPipelineOutput : IPipelineOutput
         Out = new PipeStream();
         Error = new PipeStream();
 
-        Process.StandardOutput.BaseStream.CopyToAsync(Out);
-        Process.StandardError.BaseStream.CopyToAsync(Error);
+        if (Process.StartInfo.RedirectStandardOutput)
+        {
+            Process.StandardOutput.BaseStream.CopyToAsync(Out);
+        }
+        if (Process.StartInfo.RedirectStandardError)
+        {
+            Process.StandardError.BaseStream.CopyToAsync(Error);
+        }
     }
 
     public async Task<int> WaitForExit(CancellationToken ct = default)

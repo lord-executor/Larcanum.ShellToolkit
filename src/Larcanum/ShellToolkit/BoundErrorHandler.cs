@@ -23,11 +23,6 @@ public class BoundErrorHandler : IBoundCommand
         return CheckAndThrow(await _inner.ExecAsync(ct), _inner);
     }
 
-    public void ExecDetached()
-    {
-        throw new InvalidOperationException("Error handling is not possible with detached command execution.");
-    }
-
     public IBoundCommand ThrowOnError()
     {
         return this;

@@ -4,7 +4,6 @@ public enum CommandMode
 {
     Run,
     Capture,
-    Detach
 }
 
 public static class CommandModeExtensions
@@ -15,7 +14,6 @@ public static class CommandModeExtensions
         {
             CommandMode.Run => "(r)",
             CommandMode.Capture => "(c)",
-            CommandMode.Detach => "(d)",
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
     }

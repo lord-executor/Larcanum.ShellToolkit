@@ -2,7 +2,7 @@ namespace Larcanum.ShellToolkit;
 
 public class Pipeline : IPipeline
 {
-    private readonly List<IPipelineStep> _steps = new List<IPipelineStep>();
+    private readonly List<IPipelineStep> _steps = [];
 
     public Pipeline(ICommand cmd)
     {
@@ -47,12 +47,7 @@ public class Pipeline : IPipeline
             var exitCode = await li.Item.WaitForExit(ct);
             if (result == null && (exitCode != 0  || li.IsLast))
             {
-                result = new CommandResult
-                {
-                    ExitCode = exitCode,
-                    Output = await li.Item.ReadAllOutput(ct),
-                    Error = await li.Item.ReadAllError(ct),
-                };
+                result = await li.Item.ToCommandResult(exitCode, ct);
             }
         }
 

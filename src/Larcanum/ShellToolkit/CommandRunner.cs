@@ -71,14 +71,4 @@ public class CommandRunner : ICommandRunner, IExecutionContext
     {
         return Bind(pipeline).CaptureAsync(ct);
     }
-
-    public void ExecDetached(ICommand cmd)
-    {
-        Bind(cmd).ExecDetached();
-    }
-
-    public void ExecDetached(IPipeline pipeline)
-    {
-        Bind(pipeline).ExecDetached();
-    }
 }
