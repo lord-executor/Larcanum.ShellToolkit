@@ -2,16 +2,12 @@
 
 public class StreamPipelineOutput : IPipelineOutput
 {
-    public StreamReader? Out { get; }
+    public Stream Out { get; }
+    public Stream Error { get; } = Stream.Null;
 
-    public StreamPipelineOutput(StreamReader input)
+    public StreamPipelineOutput(Stream output)
     {
-        Out = input;
-    }
-
-    public StreamPipelineOutput(Stream input)
-        : this(new StreamReader(input))
-    {
+        Out = output;
     }
 
     public Task<int> WaitForExit(CancellationToken ct = default)

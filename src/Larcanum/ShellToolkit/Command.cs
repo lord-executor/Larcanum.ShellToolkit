@@ -47,8 +47,6 @@ public partial class Command : ICommand
     public string CommandPath { get; private set; }
     public IEnumerable<IArg> Arguments { get; private set; }
 
-    private readonly string _workingDir = Environment.CurrentDirectory;
-
     private Command(string cmd, IEnumerable<IArg> cmdArgs)
     {
         CommandPath = cmd;

@@ -4,12 +4,20 @@ public class EmptyPipelineOutput : IPipelineOutput
 {
     public static readonly EmptyPipelineOutput Instance = new EmptyPipelineOutput();
 
-    public StreamReader? Out => null;
+    private readonly Task<int> _task;
 
-    private EmptyPipelineOutput() {}
+    public Stream Out { get; } = Stream.Null;
+    public Stream Error { get; } = Stream.Null;
+
+    private EmptyPipelineOutput() : this(Task.FromResult(0)) {}
+
+    public EmptyPipelineOutput(Task<int> task)
+    {
+        _task = task;
+    }
 
     public Task<int> WaitForExit(CancellationToken ct = default)
     {
-        return Task.FromResult(0);
+        return _task;
     }
 }

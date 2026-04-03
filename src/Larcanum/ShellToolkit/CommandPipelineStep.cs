@@ -16,31 +16,27 @@ public class CommandPipelineStep : IPipelineStep
         _cmd = cmd;
     }
 
-    public async Task<IPipelineOutput> Connect(IPipelineOutput previous, OutputMode mode, CancellationToken ct = default)
+    public async Task<IPipelineOutput> Connect(IPipelineOutput? previous, OutputMode mode, CancellationToken ct = default)
     {
         var process = new Process { StartInfo = _cmd.ToProcessStartInfo() };
 
         if (mode == OutputMode.Capture)
         {
             process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
         }
 
-        if (previous.Out != null)
+        if (previous != null)
         {
             process.StartInfo.RedirectStandardInput = true;
+            _ = previous.Out.CopyToAsync(process.StandardInput.BaseStream, ct)
+                .ContinueWith(_ => process.StandardInput.Close(), ct);
         }
 
         process.Start();
+        var output = new ProcessPipelineOutput(process);
 
-        if (previous.Out != null)
-        {
-            await previous.Out.BaseStream.CopyToAsync(process.StandardInput.BaseStream, ct);
-            // If the STDIN of the process is not closed, then it can never complete, so we want to
-            // close it as soon as we have copied all the data from the previous pipeline step.
-            process.StandardInput.Close();
-        }
-
-        return new ProcessPipelineOutput(process);
+        return output;
     }
 
     public override string ToString()

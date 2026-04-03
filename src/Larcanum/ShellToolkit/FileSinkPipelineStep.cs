@@ -12,9 +12,9 @@ public class FileSinkPipelineStep : IPipelineStep
         _file = file;
     }
 
-    public async Task<IPipelineOutput> Connect(IPipelineOutput previous, OutputMode mode, CancellationToken ct = default)
+    public Task<IPipelineOutput> Connect(IPipelineOutput? previous, OutputMode mode, CancellationToken ct = default)
     {
-        if (previous.Out == null)
+        if (previous == null)
         {
             throw new InvalidOperationException("Previous pipeline step did not provide a connectable output");
         }
@@ -24,12 +24,17 @@ public class FileSinkPipelineStep : IPipelineStep
             throw new InvalidOperationException("Cannot capture output from a file sink");
         }
 
-        await using var stream = _file.Open(FileMode.OpenOrCreate);
+        var stream = _file.Open(FileMode.OpenOrCreate);
         // truncate
         stream.SetLength(0);
-        await previous.Out.BaseStream.CopyToAsync(stream, ct);
+        var resultTask = previous.Out.CopyToAsync(stream, ct)
+            .ContinueWith(_ =>
+            {
+                stream.DisposeAsync();
+                return 0;
+            }, ct);
 
-        return EmptyPipelineOutput.Instance;
+        return Task.FromResult<IPipelineOutput>(new EmptyPipelineOutput(resultTask));
     }
 
     public override string ToString()
