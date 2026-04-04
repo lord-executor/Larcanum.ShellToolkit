@@ -11,7 +11,7 @@ public static class CommandRunnerExtensions
     {
         public IBoundCommand Bind(ICommand command)
         {
-            return runner.Bind(new Pipeline(new ProcessPipelineStep(command)));
+            return runner.Bind(new Pipeline().Pipe(command));
         }
 
         public Task<int> ExecAsync(ICommand cmd, CancellationToken ct = default)
@@ -33,5 +33,11 @@ public static class CommandRunnerExtensions
         {
             return runner.Bind(pipeline).CaptureAsync(ct);
         }
+
+        public Task<string> CaptureAsStringAsync(ICommand command, CancellationToken ct = default) =>
+            runner.Bind(command).ThrowOnError().CaptureAsync(ct).ContinueWith(t => t.Result.AsString(), ct);
+
+        public Task<string?> CaptureAsNullableStringAsync(ICommand command, CancellationToken ct = default) =>
+            runner.Bind(command).ThrowOnError().CaptureAsync(ct).ContinueWith(t => t.Result.AsNullableString(), ct);
     }
 }

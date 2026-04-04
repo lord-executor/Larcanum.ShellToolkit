@@ -38,9 +38,4 @@ public class ProcessPipelineStep : IPipelineStep
 
         return output;
     }
-
-    public override string ToString()
-    {
-        return $" | {_cmd}";
-    }
 }

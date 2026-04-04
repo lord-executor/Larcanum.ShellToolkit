@@ -31,6 +31,11 @@ public class CommandRunner : ICommandRunner, IExecutionContext
         _logger.LogDebug("[exec{m}]: {cmd}", mode.AsString(), command);
     }
 
+    IPipelineStep IExecutionContext.CreatePipelineStep(ICommand command)
+    {
+        return new ProcessPipelineStep(command);
+    }
+
     public CommandRunner(Settings settings, ILogger<CommandRunner> logger)
         : this(settings, (ILogger)logger)
     {
