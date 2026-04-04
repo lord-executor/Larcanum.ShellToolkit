@@ -5,7 +5,7 @@ public class BoundPipeline : IBoundCommand
     private readonly IExecutionContext _context;
     private readonly IPipeline _pipeline;
 
-    internal BoundPipeline(IExecutionContext context, IPipeline pipeline)
+    public BoundPipeline(IExecutionContext context, IPipeline pipeline)
     {
         _context = context;
         _pipeline = pipeline;
