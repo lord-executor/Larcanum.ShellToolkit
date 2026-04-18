@@ -2,65 +2,84 @@ namespace Larcanum.ShellToolkit;
 
 public class Pipeline : IPipeline
 {
-    private readonly List<IPipelineStep> _steps = new List<IPipelineStep>();
+    private readonly IPipelineOutput? _initial;
+    private readonly List<StepProxy> _steps = [];
 
-    public Pipeline(ICommand cmd)
+    public Pipeline(IPipelineOutput? initial = null)
     {
-        _steps.Add(new CommandPipelineStep(cmd));
+        _initial = initial;
     }
 
-    public IPipeline Pipe(ICommand cmd)
+    public IPipeline Pipe(ICommand command)
     {
-        _steps.Add(new CommandPipelineStep(cmd));
+        _steps.Add(new StepProxy(context => context.CreatePipelineStep(command), $" | {command}"));
         return this;
     }
 
-    public IPipeline Pipe(FileInfo file)
+    public IPipeline Pipe(IPipelineStep step)
     {
-        _steps.Add(new FileSinkPipelineStep(file));
+        _steps.Add(new StepProxy(_ => step, step.ToString()!));
         return this;
     }
 
-    public async Task<CommandResult> Run(PipelineOutput initial, OutputMode mode, CancellationToken ct = default)
+    public async Task<CommandResult> Run(IExecutionContext context, OutputMode mode, CancellationToken ct = default)
     {
-        // This process is certainly not the most efficient, especially for longer running commands with large
-        // outputs. This approach waits for each step to complete before starting the next one and at any time there
-        // are at most two child processes running (one producing output and one consuming output). At some point
-        // it might become too inefficient, and we'll have to establish a proper _streaming_ pipeline which hopefully
-        // should be possible without refactoring all the client code.
-        var previous = initial;
-        var lastExitCode = 0;
-        for (var i = 0; i < _steps.Count; i++)
+        // This process is starting each pipeline step in order and connecting its output stream to the next step.
+        // Then we wait for each step to exit and read the final output. If any of the steps fail, we return the output
+        // of the first failed step.
+        var previous = _initial;
+        var outputChain = new List<IPipelineOutput>();
+
+        if (previous != null)
         {
-            var isLast = (i == _steps.Count - 1);
-            var output = await _steps[i].Connect(previous, isLast ? mode : OutputMode.Capture, ct);
-            if (previous.Process != null)
-            {
-                await previous.Process.WaitForExitAsync(ct);
-                lastExitCode = previous.Process.ExitCode;
-                previous.Process.Dispose();
-            }
+            outputChain.Add(previous);
+        }
+
+        foreach (var li in ListItems(_steps.Select(p => p.StepFactory(context)).ToList()))
+        {
+            var output = await li.Item.Connect(previous, li.IsLast ? mode : OutputMode.Capture, ct);
+            outputChain.Add(output);
             previous = output;
         }
 
-        if (previous.Process != null)
+        CommandResult? result = null;
+        foreach (var li in ListItems(outputChain))
         {
-            await previous.Process.WaitForExitAsync(ct);
-            lastExitCode = previous.Process.ExitCode;
-            previous.Process.Dispose();
-
-            return new CommandResult
+            var exitCode = await li.Item.WaitForExit(ct);
+            if (result == null && (exitCode != 0  || li.IsLast))
             {
-                ExitCode = lastExitCode,
-                Output = previous.Out == null ? string.Empty : await previous.Out.ReadToEndAsync(ct)
-            };
+                result = await li.Item.ToCommandResult(exitCode, ct);
+            }
         }
 
-        return new CommandResult { ExitCode = lastExitCode };
+        return result ?? throw new InvalidOperationException("Pipeline has no result. This should never happen.");
     }
 
     public override string ToString()
     {
-        return string.Join(string.Empty, _steps).TrimStart(' ', '|');
+        return string.Join(string.Empty, _steps.Select(p => p.DisplayText)).TrimStart(' ', '|');
+    }
+
+    private static IEnumerable<ListItem<T>> ListItems<T>(List<T> list)
+    {
+        return list.Select((item, index) => new ListItem<T>
+        {
+            Item = item,
+            Index = index,
+            IsFirst = index == 0,
+            IsLast = index == list.Count - 1
+        });
+    }
+
+    delegate IPipelineStep PipelineStepFactory(IExecutionContext context);
+
+    private record StepProxy(PipelineStepFactory StepFactory, string DisplayText);
+
+    private class ListItem<T>
+    {
+        public required T Item { get; init; }
+        public required int Index { get; init; }
+        public required bool IsFirst { get; init; }
+        public required bool IsLast { get; init; }
     }
 }

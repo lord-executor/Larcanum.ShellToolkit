@@ -1,8 +1,11 @@
-using System.Diagnostics;
-
 namespace Larcanum.ShellToolkit;
 
 public interface ICommand
 {
-    ProcessStartInfo ToProcessStartInfo();
+    string CommandPath { get; }
+    IEnumerable<IArg> Arguments { get; }
+
+    string ToCommandText() => Arguments.Any()
+        ? $"{CommandPath} {string.Join(" ", Arguments.Select(a => a.Argument))}"
+        : CommandPath;
 }

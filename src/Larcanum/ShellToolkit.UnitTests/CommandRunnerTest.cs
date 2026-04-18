@@ -77,10 +77,10 @@ public class CommandRunnerTest
     }
 
     [Fact]
-    public void ExecuteDetached_SingleCommand_NoResponse()
+    public void ExecuteAsync_WithoutAwait_NoResponse()
     {
         var runner = CreateRunner();
-        runner.ExecDetached(SampleCommands.Version());
+        runner.ExecAsync(SampleCommands.Version());
 
         runner.Should().NotBeNull();
     }

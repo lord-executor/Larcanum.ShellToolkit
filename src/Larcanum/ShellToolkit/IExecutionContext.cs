@@ -8,4 +8,5 @@ public interface IExecutionContext
     ILogger Logger { get; }
 
     void LogCommand(object command, CommandMode mode);
+    IPipelineStep CreatePipelineStep(ICommand command);
 }

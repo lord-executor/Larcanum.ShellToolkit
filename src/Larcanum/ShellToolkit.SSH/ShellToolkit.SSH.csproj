@@ -14,7 +14,7 @@
         <PackageId>Larcanum.ShellToolkit.SSH</PackageId>
         <Authors>Lukas Angerer</Authors>
         <Description>Wrapper library to run commands remotely over SSH using SSH.NET</Description>
-        <Copyright>Copyright 2025 Lukas Angerer</Copyright>
+        <Copyright>Copyright 2026 Lukas Angerer</Copyright>
         <PackageProjectUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</PackageProjectUrl>
         <RepositoryUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</RepositoryUrl>
         <RepositoryType>git</RepositoryType>

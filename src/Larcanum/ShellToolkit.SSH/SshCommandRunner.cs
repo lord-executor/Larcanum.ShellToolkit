@@ -4,7 +4,7 @@ using Renci.SshNet;
 
 namespace Larcanum.ShellToolkit.SSH;
 
-public class SshCommandRunner : ICommandRunner, ISshExecutionContext
+public class SshCommandRunner : ICommandRunner, IExecutionContext
 {
     public static SshCommandRunner Create(ISshClient client)
     {
@@ -25,15 +25,6 @@ public class SshCommandRunner : ICommandRunner, ISshExecutionContext
     private readonly Settings _settings;
     private readonly ILogger _logger;
 
-    ISshClient ISshExecutionContext.Client => _client;
-    Settings IExecutionContext.Settings => _settings;
-    ILogger IExecutionContext.Logger => _logger;
-
-    void IExecutionContext.LogCommand(object command, CommandMode mode)
-    {
-        _logger.LogDebug("[sshex{m}@{host}]: {cmd}", mode.AsString(), _client.ConnectionInfo.Host, command);
-    }
-
     public SshCommandRunner(ISshClient client, Settings settings, ILogger<SshCommandRunner> logger)
         : this(client, settings, (ILogger)logger)
     {
@@ -46,43 +37,21 @@ public class SshCommandRunner : ICommandRunner, ISshExecutionContext
         _logger = logger;
     }
 
-    public IBoundCommand Bind(ICommand command)
+    Settings IExecutionContext.Settings => _settings;
+    ILogger IExecutionContext.Logger => _logger;
+
+    void IExecutionContext.LogCommand(object command, CommandMode mode)
     {
-        return new SshBoundCommand(this, command);
+        _logger.LogDebug("[sshex{m}@{host}]: {cmd}", mode.AsString(), _client.ConnectionInfo.Host, command);
+    }
+
+    IPipelineStep IExecutionContext.CreatePipelineStep(ICommand command)
+    {
+        return new SshPipelineStep(_client, command);
     }
 
     public IBoundCommand Bind(IPipeline pipeline)
     {
-        return new SshBoundPipeline(this, pipeline);
-    }
-
-    public Task<int> ExecAsync(ICommand cmd, CancellationToken ct = default)
-    {
-        return Bind(cmd).ExecAsync(ct);
-    }
-
-    public Task<int> ExecAsync(IPipeline pipeline, CancellationToken ct = default)
-    {
-        return Bind(pipeline).ExecAsync(ct);
-    }
-
-    public Task<CommandResult> CaptureAsync(ICommand cmd, CancellationToken ct = default)
-    {
-        return Bind(cmd).CaptureAsync(ct);
-    }
-
-    public Task<CommandResult> CaptureAsync(IPipeline pipeline, CancellationToken ct = default)
-    {
-        return Bind(pipeline).CaptureAsync(ct);
-    }
-
-    public void ExecDetached(ICommand cmd)
-    {
-        Bind(cmd).ExecDetached();
-    }
-
-    public void ExecDetached(IPipeline pipeline)
-    {
-        Bind(pipeline).ExecDetached();
+        return new BoundPipeline(this, pipeline);
     }
 }

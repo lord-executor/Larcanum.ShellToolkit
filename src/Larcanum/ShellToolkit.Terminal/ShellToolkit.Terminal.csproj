@@ -14,7 +14,7 @@
         <PackageId>Larcanum.ShellToolkit.Terminal</PackageId>
         <Authors>Lukas Angerer</Authors>
         <Description>Framework for creating terminal programs based on System.CommandLine</Description>
-        <Copyright>Copyright 2025 Lukas Angerer</Copyright>
+        <Copyright>Copyright 2026 Lukas Angerer</Copyright>
         <PackageProjectUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</PackageProjectUrl>
         <RepositoryUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
@@ -37,10 +37,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-        <PackageReference Include="System.CommandLine" Version="2.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.6" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
+        <PackageReference Include="System.CommandLine" Version="2.0.6" />
     </ItemGroup>
 
     <ItemGroup>

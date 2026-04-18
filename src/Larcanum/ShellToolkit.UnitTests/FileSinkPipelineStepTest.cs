@@ -16,7 +16,7 @@ public class FileSinkPipelineStepTest
     {
         using var f = WithTempFile();
         var sink = new FileSinkPipelineStep(f.File);
-        Func<Task> action = async () => await sink.Connect(new PipelineOutput(StreamReader.Null), OutputMode.Capture);
+        Func<Task> action = async () => await sink.Connect(new StreamPipelineOutput(Stream.Null), OutputMode.Capture);
         (await action.Should().ThrowAsync<InvalidOperationException>())
             .And.Message.Should().Contain("Cannot capture output");
     }
@@ -26,10 +26,8 @@ public class FileSinkPipelineStepTest
     {
         using var f = WithTempFile();
         var sink = new FileSinkPipelineStep(f.File);
-        var proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = "foobar" } };
-        var previous = new PipelineOutput(proc);
 
-        Func<Task> action = async () => await sink.Connect(previous, OutputMode.Default);
+        Func<Task> action = async () => await sink.Connect(null, OutputMode.Default);
         (await action.Should().ThrowAsync<InvalidOperationException>())
             .And.Message.Should().Contain("not provide a connectable output");
     }
@@ -43,11 +41,14 @@ public class FileSinkPipelineStepTest
         var stream = new MemoryStream();
         stream.Write(Encoding.UTF8.GetBytes(data));
         stream.Seek(0, SeekOrigin.Begin);
-        var previous = new PipelineOutput(new StreamReader(stream));
+        var previous = new StreamPipelineOutput(stream);
 
         var result = await sink.Connect(previous, OutputMode.Default);
+        var exitCode = await result.WaitForExit();
 
-        result.Should().BeSameAs(PipelineOutput.Empty);
+        exitCode.Should().Be(0);
+        result.Out.Length.Should().Be(0);
+        result.Error.Length.Should().Be(0);
 
         var fileContent = await File.ReadAllTextAsync(f.File.FullName);
         fileContent.Should().Be(data);

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace Larcanum.ShellToolkit;
@@ -45,35 +44,18 @@ public partial class Command : ICommand
         return new Command(commandName, args[1..].Select(s => (StringArg)s));
     }
 
-    private readonly string _cmd;
-    private readonly IEnumerable<IArg> _cmdArgs;
-    private readonly string _workingDir = Environment.CurrentDirectory;
+    public string CommandPath { get; private set; }
+    public IEnumerable<IArg> Arguments { get; private set; }
 
     private Command(string cmd, IEnumerable<IArg> cmdArgs)
     {
-        _cmd = cmd;
-        _cmdArgs = cmdArgs;
-    }
-
-    public ProcessStartInfo ToProcessStartInfo()
-    {
-        var info = new ProcessStartInfo
-        {
-            FileName = _cmd,
-            WorkingDirectory = _workingDir,
-        };
-
-        foreach (var arg in _cmdArgs)
-        {
-            info.ArgumentList.Add(arg.Argument);
-        }
-
-        return info;
+        CommandPath = cmd;
+        Arguments = cmdArgs;
     }
 
     public override string ToString()
     {
-        var args = string.Join(" ", _cmdArgs.Select(a => a.DisplayText));
-        return string.IsNullOrEmpty(args) ? _cmd : $"{_cmd} {args}";
+        var args = string.Join(" ", Arguments.Select(a => a.DisplayText));
+        return string.IsNullOrEmpty(args) ? CommandPath : $"{CommandPath} {args}";
     }
 }

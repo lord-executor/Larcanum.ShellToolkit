@@ -2,13 +2,18 @@ namespace Larcanum.ShellToolkit;
 
 public interface IPipeline
 {
-    Task<CommandResult> Run(OutputMode mode = OutputMode.Default, CancellationToken ct = default)
+    IPipeline Pipe(ICommand command);
+    IPipeline Pipe(IPipelineStep step);
+    Task<CommandResult> Run(IExecutionContext context, OutputMode mode, CancellationToken ct = default);
+}
+
+public static class PipelineExtensions
+{
+    extension(IPipeline pipeline)
     {
-        return Run(PipelineOutput.Empty, mode, ct);
+        public IPipeline Pipe(FileInfo file)
+        {
+            return pipeline.Pipe(new FileSinkPipelineStep(file));
+        }
     }
-
-    Task<CommandResult> Run(PipelineOutput initial, OutputMode mode, CancellationToken ct = default);
-
-    IPipeline Pipe(ICommand cmd);
-    IPipeline Pipe(FileInfo file);
 }
