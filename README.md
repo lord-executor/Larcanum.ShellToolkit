@@ -1,28 +1,29 @@
 # ShellToolkit
+
 [![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/lord-executor/Larcanum.ShellToolkit/blob/master/LICENSE) [![Nuget](https://img.shields.io/nuget/v/Larcanum.ShellToolkit.svg)](https://www.nuget.org/packages/Larcanum.ShellToolkit/)
 
 The goal of this library is to provide a set of tools to start and interact with processes on the host system in a way that is similarly easy to use as _Bash_ or oder shells. First and foremost this means providing a convenient API on top of the rather crusty and awkward `System.Diagnostics.Process` and `System.Diagnostics.ProcessStartInfo`. On top of that, the library provides methods for building _pipelines_ of commands similar to how pipes work in Bash.
 
 One common use case and the reason for creating this library is the creation of custom .NET command line tools that rely on other programs like `git`, `7z`, `dotnet`, `jq`, `sed`, `awk`, etc. to avoid reinventing the wheel.
 
-# Examples
+## Examples
 
 The examples here are assuming that the following command line tools are available in your system `PATH`
 - [dotnet CLI](https://learn.microsoft.com/en-us/dotnet/core/tools/)
 - [jq](https://jqlang.github.io/jq/)
 
-## Capturing and Processing simple Command Output
+### Capturing and Processing simple Command Output
 
 ```cs
 var runner = CommandRunner.Create();
 
-var version = Version.Parse((await runner.CaptureAsync(Command.Create("dotnet", ["--version"]))).Output!);
+var version = Version.Parse(await runner.CaptureAsStringAsync(Command.Create("dotnet", ["--version"])));
 // version.Major = 8
 // version.Minor = 0
 // version.Build = 200
 ```
 
-## Running Command Output through Filters and into a File
+### Running Command Output through Filters and into a File
 
 ```cs
 var runner = CommandRunner.Create();
@@ -41,7 +42,35 @@ var result = await File.ReadAllTextAsync(tempFile.FullName);
 // result = "Microsoft.Extensions.Logging.Abstractions"
 ```
 
+# ShellToolkit.SSH
+
+[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/lord-executor/Larcanum.ShellToolkit/blob/master/LICENSE) [![Nuget](https://img.shields.io/nuget/v/Larcanum.ShellToolkit.SSH.svg)](https://www.nuget.org/packages/Larcanum.ShellToolkit.SSH/)
+
+This library provides integration with the popular SSH library [SSH.NET](https://github.com/sshnet/ssh.net) by implementing an `ICommandRunner` that can be used to execute commands on remote hosts. It's really as simple as that.
+
+## Examples
+
+```cs
+using var client = new SshClient("myhost.internal", 22, "user", new PrivateKeyFile(@".my-private-key"));
+client.Connect();
+
+var runner = SshCommandRunner.Create(client);
+
+var pwd = await runner.CaptureAsStringAsync(Command.Create("pwd"));
+Console.WriteLine($"Working directory: {pwd}");
+await runner.ExecAsync(Command.Create("ls -al")
+    .Pipe(Command.Create("grep bash"))
+    .Pipe(Command.Create("cat --number")));
+// Output looks something like this:
+// Working directory: /home/user
+//   1  -rw-rw-r--  1 user user    81 Jan 10 10:05 .bash_aliases
+//   2  -rw-------  1 user user 39622 Jan 10 10:05 .bash_history
+//   3  -rw-r--r--  1 user user   220 Jan 10 10:05 .bash_logout
+//   4  -rw-r--r--  1 user user  3797 Jan 10 10:05 .bashrc
+```
+
 # ShellToolkit.Terminal
+
 [![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/lord-executor/Larcanum.ShellToolkit/blob/master/LICENSE) [![Nuget](https://img.shields.io/nuget/v/Larcanum.ShellToolkit.Terminal.svg)](https://www.nuget.org/packages/Larcanum.ShellToolkit.Terminal/)
 
 This is a supplemental library for creating CLI programs based on the [`System.CommandLine`](https://www.nuget.org/packages/System.CommandLine) library from Microsoft.
