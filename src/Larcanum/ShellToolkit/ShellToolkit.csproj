@@ -14,7 +14,7 @@
         <PackageId>Larcanum.ShellToolkit</PackageId>
         <Authors>Lukas Angerer</Authors>
         <Description>Library for convenient shell-like process interaction</Description>
-        <Copyright>Copyright 2025 Lukas Angerer</Copyright>
+        <Copyright>Copyright 2026 Lukas Angerer</Copyright>
         <PackageProjectUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</PackageProjectUrl>
         <RepositoryUrl>https://github.com/lord-executor/Larcanum.ShellToolkit</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
