@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Files/">
+    <File Path="../.editorconfig" />
+    <File Path="../.github/workflows/build.yml" />
+    <File Path="../.github/workflows/publish.yml" />
+    <File Path="../.gitignore" />
+    <File Path="../global.json" />
+    <File Path="../LICENSE" />
+    <File Path="../README.md" />
+  </Folder>
+  <Project Path="ShellToolkit.SSH/ShellToolkit.SSH.csproj" />
+  <Project Path="ShellToolkit.Terminal/ShellToolkit.Terminal.csproj" />
+  <Project Path="ShellToolkit.UnitTests/ShellToolkit.UnitTests.csproj" />
+  <Project Path="ShellToolkit/ShellToolkit.csproj" />
+</Solution>

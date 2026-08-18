@@ -45,7 +45,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="..\..\..\README.md" Pack="true" PackagePath="\">
+        <Content Include="..\..\README.md" Pack="true" PackagePath="\">
             <Link>README.md</Link>
         </Content>
     </ItemGroup>
